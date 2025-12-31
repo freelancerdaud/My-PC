@@ -15,7 +15,7 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' `
             -Name "fDenyTSConnections" -Value 0 -Force
 
-          # Disable NLA (required for weak password testing)
+          # Disable NLA (for testing with weak password)
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' `
             -Name "UserAuthentication" -Value 0 -Force
 
@@ -47,11 +47,13 @@ jobs:
 
           $securePass = ConvertTo-SecureString $password -AsPlainText -Force
 
-          New-LocalUser -Name "RDP" -Password $securePass -AccountNeverExpires
-          Add-LocalGroupMember -Group "Administrators" -Member "RDP"
-          Add-LocalGroupMember -Group "Remote Desktop Users" -Member "RDP"
+          # <<< CHANGED >>> Username "RDP" -> "FDRDP"
+          New-LocalUser -Name "FDRDP" -Password $securePass -AccountNeverExpires
+          Add-LocalGroupMember -Group "Administrators" -Member "FDRDP"     # <<< CHANGED >>>
+          Add-LocalGroupMember -Group "Remote Desktop Users" -Member "FDRDP" # <<< CHANGED >>>
 
-          echo "RDP_USER=RDP" >> $env:GITHUB_ENV
+          # <<< CHANGED >>> Env variables updated
+          echo "RDP_USER=FDRDP" >> $env:GITHUB_ENV
           echo "RDP_PASS=1" >> $env:GITHUB_ENV
 
       - name: Install Tailscale
@@ -84,7 +86,7 @@ jobs:
         run: |
           Write-Host "=============================="
           Write-Host "RDP IP : $env:TAILSCALE_IP"
-          Write-Host "USER   : RDP"
+          Write-Host "USER   : FDRDP"   # <<< CHANGED >>>
           Write-Host "PASS   : 1"
           Write-Host "=============================="
 
